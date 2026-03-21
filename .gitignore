@@ -1,0 +1,8 @@
+venv_paddle/
+en/
+vn/
+drug_web/
+ocr_env/
+.env
+**/drug_web
+**/ocr_env

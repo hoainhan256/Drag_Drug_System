@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống An Toàn Dược Lý</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        #loading { display: none; }
+        #result-section { display: none; }
+        .ingredient-card { margin-bottom: 2rem; border: 2px solid #dee2e6; border-radius: 10px; padding: 15px; }
+        
+        /* CSS cho phần xem trước ảnh */
+        .preview-img-container {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        .remove-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h2 class="text-center text-primary mb-4 fw-bold">🏥 Hệ Thống Kiểm Định Đối Tượng Sử Dụng Thuốc Và Tương Tác Thuốc</h2>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form id="uploadForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="userText" class="form-label fw-bold">Nhập tên thuốc (Tên hoạt chất bên trong thành phần thuốc):</label>
+                        <input type="text" class="form-control" id="userText" placeholder="VD: Paracetamol, Ibuprofen...">
+                    </div>
+                    
+                    <div class="mb-2">
+                        <label class="form-label fw-bold">Hoặc tải lên ảnh đơn thuốc/vỏ hộp (Tối đa 10 ảnh chứa thành phần hoạt chất có trong thuốc):</label>
+                        
+                        <div class="d-flex gap-2 mb-2">
+                            <label class="btn btn-outline-primary flex-fill fw-bold">
+                                📷 Chụp ảnh
+                                <input type="file" id="btnCamera" accept="image/*" capture="environment" class="d-none">
+                            </label>
+
+                            <label class="btn btn-outline-secondary flex-fill fw-bold">
+                                🖼️ Chọn từ máy
+                                <input type="file" id="btnGallery" accept="image/*" multiple class="d-none">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="fileWarning" class="text-danger small mb-2" style="display: none;">
+                        * Chỉ được phép tải lên tối đa 10 ảnh.
+                    </div>
+
+                    <div id="imagePreview" class="mb-3"></div>
+
+                    <div class="d-grid">
+                        <button type="submit" id="submitBtn" class="btn btn-primary btn-lg fw-bold" disabled>Tra Cứu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="loading" class="text-center my-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 fw-bold text-secondary">Đang quét OCR và truy xuất dữ liệu y tế...</p>
+        </div>
+
+        <div id="result-section">
+            <div id="dynamic-results"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        const maxFiles = 10;
+
+        // Các thành phần DOM
+        const userTextInput = document.getElementById('userText');
+        const btnCamera = document.getElementById('btnCamera');
+        const btnGallery = document.getElementById('btnGallery');
+        const imagePreview = document.getElementById('imagePreview');
+        const submitBtn = document.getElementById('submitBtn');
+        const fileWarning = document.getElementById('fileWarning');
+        const dynamicResults = document.getElementById('dynamic-results');
+
+        // Cập nhật trạng thái nút Submit
+        function updateSubmitButtonState() {
+            const hasText = userTextInput.value.trim().length > 0;
+            const hasImages = selectedFiles.length > 0;
+            submitBtn.disabled = !(hasText || hasImages);
+        }
+
+        userTextInput.addEventListener('input', updateSubmitButtonState);
+
+        // HÀM XỬ LÝ CHUNG KHI CHỌN/CHỤP ẢNH
+        function handleFileSelect(e) {
+            let files = Array.from(e.target.files);
+            files.forEach(file => {
+                if (selectedFiles.length < maxFiles) {
+                    // Kiểm tra tránh trùng lặp ảnh
+                    if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                        selectedFiles.push(file);
+                    }
+                } else {
+                    fileWarning.style.display = 'block';
+                }
+            });
+            e.target.value = ''; // Reset input để có thể chọn lại cùng 1 file nếu cần
+            renderPreviews();
+            updateSubmitButtonState();
+        }
+
+        // Gắn sự kiện cho 2 nút mới
+        btnCamera.addEventListener('change', handleFileSelect);
+        btnGallery.addEventListener('change', handleFileSelect);
+
+        // Hiển thị ảnh xem trước
+        function renderPreviews() {
+            imagePreview.innerHTML = ''; 
+            selectedFiles.forEach((file, index) => {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let div = document.createElement('div');
+                    div.className = 'preview-img-container shadow-sm';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" class="preview-img" alt="preview">
+                        <button type="button" class="remove-btn" onclick="removeImage(${index})">&times;</button>
+                    `;
+                    imagePreview.appendChild(div);
+                }
+                reader.readAsDataURL(file);
+            });
+            if (selectedFiles.length < maxFiles) { fileWarning.style.display = 'none'; }
+        }
+
+        // Xóa ảnh
+        window.removeImage = function(index) {
+            selectedFiles.splice(index, 1);
+            renderPreviews();
+            updateSubmitButtonState();
+        };
+
+        // Xử lý gửi Form
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+
+            const userText = userTextInput.value.trim();
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result-section').style.display = 'none';
+            dynamicResults.innerHTML = ''; 
+
+            let formData = new FormData();
+            let csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            formData.append('user_text', userText);
+            selectedFiles.forEach(file => {
+                formData.append('images', file);
+            });
+
+            // Gửi dữ liệu lên API
+            fetch('/process_drug_image/', { 
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                if (data.status === 'success') {
+                    
+                    // 1. RENDER CẢNH BÁO TƯƠNG TÁC THUỐC
+                    if (data.interactions && data.interactions.length > 0) {
+                        let interactionHtml = `
+                            <div class="alert alert-danger shadow-sm mb-4 border-danger" role="alert">
+                                <h4 class="alert-heading text-danger fw-bold">⚠️ CẢNH BÁO TƯƠNG TÁC THUỐC!</h4>
+                                <hr class="border-danger">
+                        `;
+                        data.interactions.forEach(int => {
+                            interactionHtml += `
+                                <div class="mb-3 p-3 bg-white text-dark rounded border border-danger shadow-sm">
+                                    <h5 class="text-danger fw-bold">💊 ${int.thuoc_1} ↔️ ${int.thuoc_2}</h5>
+                                    <p class="mb-1"><strong>⚠️ Hậu quả:</strong> ${int.hau_qua}</p>
+                                    <p class="mb-1"><strong>⚙️ Cơ chế:</strong> ${int.co_che}</p>
+                                    <p class="mb-0"><strong>🛡️ Xử trí:</strong> <span class="text-primary fw-bold">${int.xu_tri}</span></p>
+                                </div>
+                            `;
+                        });
+                        interactionHtml += `</div>`;
+                        dynamicResults.innerHTML += interactionHtml;
+                    }
+
+                    // 2. RENDER CHUYÊN LUẬN TỪNG HOẠT CHẤT
+                    data.results.forEach(res => {
+                        if (res.has_monograph && res.details) {
+                            const details = res.details;
+                            let casesHtml = '';
+                            if (details.cac_truong_hop_cu_the) {
+                                for (const [key, value] of Object.entries(details.cac_truong_hop_cu_the)) {
+                                    let formattedKey = key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                                    casesHtml += `<li class="list-group-item"><strong>${formattedKey}:</strong> ${value}</li>`;
+                                }
+                            }
+
+                            const cardHtml = `
+                                <div class="ingredient-card shadow-sm bg-white p-3 mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                        <h4 class="text-primary mb-0 fw-bold">${res.hoat_chat}</h4>
+                                        <span class="badge bg-success rounded-pill">Độ tin cậy: ${res.confidence.toFixed(1)}%</span>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <div class="card border-danger">
+                                                <div class="card-header bg-danger text-white fw-bold py-2">CHỐNG CHỈ ĐỊNH</div>
+                                                <div class="card-body p-2 text-danger small fw-bold">${details.chong_chi_dinh || 'N/A'}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <div class="card border-warning">
+                                                <div class="card-header bg-warning text-dark fw-bold py-2">THẬN TRỌNG</div>
+                                                <div class="card-body p-2 small">${details.than_trong || 'N/A'}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <div class="card border-info">
+                                                <div class="card-header bg-info text-white fw-bold py-2">TƯƠNG TÁC THUỐC</div>
+                                                <div class="card-body p-2 small">${details.tuong_tac_thuoc || 'N/A'}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="card border-secondary">
+                                                <div class="card-header bg-secondary text-white fw-bold py-2">ĐỐI TƯỢNG CỤ THỂ</div>
+                                                <ul class="list-group list-group-flush small">${casesHtml}</ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            dynamicResults.innerHTML += cardHtml;
+                        } else {
+                            const noMonographHtml = `
+                                <div class="ingredient-card shadow-sm bg-white p-3 mb-4 border-secondary" style="opacity: 0.8;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                        <h4 class="text-secondary mb-0 fw-bold"><del>${res.hoat_chat}</del></h4>
+                                        <span class="badge bg-success rounded-pill">Độ tin cậy: ${res.confidence.toFixed(1)}%</span>
+                                    </div>
+                                    <div class="alert alert-secondary mb-0 py-2 small">
+                                        <strong>ℹ️ Chú thích:</strong> Hoạt chất này đã được AI nhận diện thành công trên bao bì thuốc nhưng <strong>chưa có trong cơ sở dữ liệu chuyên luận</strong> của hệ thống. Hệ thống vẫn sẽ tiến hành kiểm tra tương tác thuốc đối với chất này (nếu có).
+                                    </div>
+                                </div>
+                            `;
+                            dynamicResults.innerHTML += noMonographHtml;
+                        }
+                    });
+                    document.getElementById('result-section').style.display = 'block';
+                } else {
+                    alert('Thông báo: ' + data.message);
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                console.error('Error:', error);
+                alert('Lỗi kết nối server! Vui lòng kiểm tra lại mạng hoặc console.');
+            });
+        });
+    </script>
+</body>
+</html>
