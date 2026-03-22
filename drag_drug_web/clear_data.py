@@ -9,4 +9,4 @@ mongoengine.connect(db='drag_drug', host='localhost', port=27017)
 print("--- Đang dọn dẹp Database ---")
 DrugMonograph.objects.delete()      # Xóa toàn bộ chuyên luận
 DrugInteraction.objects.delete()    # Xóa toàn bộ tương tác
-print("✅ Đã xóa sạch! Bây giờ bạn có thể chạy lại file import.")
+print(" Đã xóa sạch! Bây giờ có thể chạy lại file import.")

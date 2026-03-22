@@ -4750,7 +4750,7 @@
     {
         "GLUCOSE": {
             "ten_hoat_chat": "GLUCOSE",
-            "ten_chung_quoc_te": "Glucose/Dextrose",
+            "ten_chung_quoc_te": "Glucose, Dextrose",
             "ma_atc": "B05CX01, V04CA02, V06DC01",
             "ten_thuong_mai": "Dextrose; 5D; Fluidex 5; Glucolife; IVGlu",
             "chong_chi_dinh": "Không dung nạp glucose; mất nước nhược trương chưa bù điện giải; ứ nước, hạ kali huyết; hôn mê tăng thẩm thấu; nhiễm toan; chảy máu trong sọ/tủy sống.",
@@ -4780,7 +4780,7 @@
     {
         "GLYCEROL": {
             "ten_hoat_chat": "GLYCEROL",
-            "ten_chung_quoc_te": "Glycerol (glycerin)",
+            "ten_chung_quoc_te": "Glycerol, glycerin",
             "ma_atc": "A06AG04, A06AX01",
             "ten_thuong_mai": "Stiprol; Vifticol",
             "chong_chi_dinh": "Quá mẫn với thuốc; phù phổi, mất nước nghiêm trọng, khó tiểu tiện. Không dùng khi gây tê/mê vì gây nôn.",
@@ -4795,7 +4795,7 @@
     {
         "GLYCERYL TRINITRAT": {
             "ten_hoat_chat": "GLYCERYL TRINITRAT",
-            "ten_chung_quoc_te": "Glyceryl trinitrate (Nitroglycerin)",
+            "ten_chung_quoc_te": "Glyceryl trinitrate, Nitroglycerin",
             "ma_atc": "C01DA02, C05AE01",
             "ten_thuong_mai": "",
             "chong_chi_dinh": "Huyết áp thấp, trụy tim mạch; thiếu máu nặng; tăng áp lực nội sọ; hẹp van động mạch chủ; glôcôm góc đóng.",
@@ -9885,6 +9885,22 @@
         "VITAMIN D VÀ CÁC THUỐC TƯƠNG TỰ": {
             "ten_hoat_chat": "VITAMIN D VÀ CÁC THUỐC TƯƠNG TỰ",
             "ten_chung_quoc_te": "Vitamin D and analogues",
+            "ma_atc": "A11CC01, A11CC02, A11CC03, A11CC04, D05AX03, A11CC05, A11CC06, H05BX02",
+            "ten_thuong_mai": "Dithrecol; Nat-D",
+            "chong_chi_dinh": "Tiền sử mẫn cảm với vitamin D. Tăng calci máu do bất cứ nguyên nhân nào. Sỏi thận kèm tăng calci niệu. Cường cận giáp tiên phát",
+            "than_trong": "Hết sức thận trọng ở người suy thận, sỏi thận, bệnh tim mạch hoặc xơ vữa động mạch vì tăng calci huyết làm bệnh nặng lên. Thận trọng với người đang dùng glycosid trợ tim. Cần giám sát nồng độ phosphat và calci huyết thanh để giảm nguy cơ calci hóa lạc chỗ và phát hiện nhiễm độc",
+            "tuong_tac_thuoc": "Cholestyramin, colestipol, dầu khoáng làm giảm hấp thu vitamin D. Dùng cùng lợi niệu thiazid ở người suy cận giáp dễ gây tăng calci huyết. Phenobarbital, phenytoin làm giảm nồng độ chất chuyển hóa có hoạt tính của vitamin D. Corticosteroid cản trở tác dụng của vitamin D. Độc tính của glycosid trợ tim tăng do tăng calci huyết gây loạn nhịp tim. Các thuốc ức chế mạnh CYP3A (ketoconazol, atazanavir, clarithromycin, itraconazol, ritonavir...) làm tăng nồng độ paricalcitol",
+            "cac_truong_hop_cu_the": {
+                "thoi_ky_mang_thai": "Chỉ dùng khi thật cần thiết. Tăng calci huyết có thể gây dị dạng cho thai nhi, nhưng nguy cơ do bệnh không được điều trị có thể lớn hơn; nên bổ sung bằng liều nhu cầu hàng ngày (600 đvqt)",
+                "thoi_ky_cho_con_bu": "Chỉ dùng khi thật cần thiết. Không nên dùng liều lớn hơn liều nhu cầu (600 đvqt), nếu mẹ dùng liều cao phải giám sát chặt chẽ dấu hiệu tăng calci huyết ở trẻ bú mẹ"
+            }
+        }
+    },
+    
+    {
+        "VITAMIN D": {
+            "ten_hoat_chat": "VITAMIN D",
+            "ten_chung_quoc_te": "Vitamin D",
             "ma_atc": "A11CC01, A11CC02, A11CC03, A11CC04, D05AX03, A11CC05, A11CC06, H05BX02",
             "ten_thuong_mai": "Dithrecol; Nat-D",
             "chong_chi_dinh": "Tiền sử mẫn cảm với vitamin D. Tăng calci máu do bất cứ nguyên nhân nào. Sỏi thận kèm tăng calci niệu. Cường cận giáp tiên phát",

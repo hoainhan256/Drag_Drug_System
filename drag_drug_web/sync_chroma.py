@@ -3,7 +3,7 @@ import chromadb
 from chromadb.utils import embedding_functions
 
 def sync_interactions_to_chroma(json_path):
-    # 1. Khởi tạo kết nối ChromaDB (Giống hệt vector_service.py)
+    # 1. Khởi tạo kết nối ChromaDB 
     emb_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
         model_name="paraphrase-multilingual-MiniLM-L12-v2"
     )
@@ -60,9 +60,9 @@ def sync_interactions_to_chroma(json_path):
             metadatas=new_metadatas,
             ids=new_ids
         )
-        print("✅ Đã cập nhật xong Vector DB!")
+        print(" Đã cập nhật xong Vector DB!")
     else:
-        print("✅ Không có hoạt chất nào mới. Vector DB đã chứa đầy đủ.")
+        print(" Không có hoạt chất nào mới. Vector DB đã chứa đầy đủ.")
 
 if __name__ == "__main__":
-    sync_interactions_to_chroma('database_duoc_thu_final.json')
+    sync_interactions_to_chroma('data_tuong_tac_rag.json')
